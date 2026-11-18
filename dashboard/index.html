@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Retail Banking Profitability & P&L Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#0b1220;--card:#121b2f;--muted:#94a3b8;--text:#e5e7eb;--accent:#3b82f6;--accent2:#22c55e;--warn:#f59e0b;--danger:#ef4444;--border:#22314f}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#0b1220,#0e1628);color:var(--text)}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px} h1{margin:0 0 6px;font-size:28px} .sub{color:var(--muted);margin:0 0 22px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .kpi .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em} .kpi .val{font-size:24px;font-weight:700;margin-top:6px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px} .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .card h3{margin:0 0 10px;font-size:15px;color:#dbe7ff} .span6{grid-column:span 6} .span12{grid-column:span 12} .span4{grid-column:span 4} .span8{grid-column:span 8}
+  canvas{width:100%!important;height:300px!important} table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px;border-bottom:1px solid var(--border);text-align:right} th:first-child,td:first-child{text-align:left} th{color:#cfe0ff;font-weight:600}
+  .note{color:var(--muted);font-size:12px;margin-top:8px}
+  @media(max-width:900px){.span6,.span4,.span8{grid-column:span 12} canvas{height:260px!important}}
+</style></head><body>
+<div class="wrap">
+  <h1>Retail Banking Profitability & P&amp;L Dashboard</h1>
+  <p class="sub">Branch &amp; product profitability, revenue-cost-profit trend and cost-to-income — 12 branches × 5 products × 12 months (₹ lakh).</p>
+  <div class="kpis">
+    <div class="kpi"><div class="label">Total Revenue</div><div class="val" id="kRev"></div></div>
+    <div class="kpi"><div class="label">Total Profit</div><div class="val" id="kProf"></div></div>
+    <div class="kpi"><div class="label">Cost-to-Income</div><div class="val" id="kCir"></div></div>
+    <div class="kpi"><div class="label">Latest Month Profit</div><div class="val" id="kLast"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card span8"><h3>Monthly Revenue, Cost & Profit (₹ lakh)</h3><canvas id="cTrend"></canvas></div>
+    <div class="card span4"><h3>Cost-to-Income Ratio Trend (%)</h3><canvas id="cCir"></canvas></div>
+    <div class="card span6"><h3>Product-wise Profit (₹ lakh)</h3><canvas id="cProd"></canvas></div>
+    <div class="card span6"><h3>Region-wise Profit (₹ lakh)</h3><canvas id="cReg"></canvas></div>
+    <div class="card span6"><h3>Top 5 Branches by Profit (₹ lakh)</h3><canvas id="cTop"></canvas></div>
+    <div class="card span6"><h3>Bottom 5 Branches by Profit (₹ lakh)</h3><canvas id="cBot"></canvas></div>
+  </div>
+</div>
+<script>
+const D = {"months":["2025-01-01","2025-02-01","2025-03-01","2025-04-01","2025-05-01","2025-06-01","2025-07-01","2025-08-01","2025-09-01","2025-10-01","2025-11-01","2025-12-01"],"trend":[{"m":"2025-01-01","rev":9292.2,"cost":4970.1,"profit":4322.1,"cir":53.5},{"m":"2025-02-01","rev":8966.3,"cost":4873.4,"profit":4092.9,"cir":54.4},{"m":"2025-03-01","rev":9015.6,"cost":4937,"profit":4078.6,"cir":54.8},{"m":"2025-04-01","rev":8929.4,"cost":4827.5,"profit":4101.9,"cir":54.1},{"m":"2025-05-01","rev":9494.8,"cost":5228,"profit":4266.8,"cir":55.1},{"m":"2025-06-01","rev":9102.2,"cost":4793.4,"profit":4308.7,"cir":52.7},{"m":"2025-07-01","rev":8945.3,"cost":4857.2,"profit":4088.1,"cir":54.3},{"m":"2025-08-01","rev":9523.2,"cost":5143.6,"profit":4379.6,"cir":54},{"m":"2025-09-01","rev":9341.4,"cost":5025.5,"profit":4316,"cir":53.8},{"m":"2025-10-01","rev":9101.2,"cost":4852.4,"profit":4248.8,"cir":53.3},{"m":"2025-11-01","rev":9137.5,"cost":4871.3,"profit":4266.2,"cir":53.3},{"m":"2025-12-01","rev":9483.9,"cost":5131.6,"profit":4352.3,"cir":54.1}],"byProd":[{"p":"Retail Loans","rev":23731.9,"profit":10745.5},{"p":"SME Loans","rev":32449.5,"profit":15134.2},{"p":"Credit Cards","rev":18032.6,"profit":8333.6},{"p":"Deposits","rev":13643.5,"profit":6290.2},{"p":"Wealth & Fee","rev":22475.6,"profit":10318.6}],"byRegion":[{"r":"West","rev":54901.7,"profit":25128.9},{"r":"North","rev":18401.3,"profit":8495.9},{"r":"South","rev":27808.9,"profit":12987.8},{"r":"East","rev":9221.1,"profit":4209.4}],"topBranches":[{"b":"Mumbai-BKC","profit":4515.3},{"b":"Chennai-Adyar","profit":4445.3},{"b":"Bengaluru-HSR","profit":4315.2},{"b":"Jaipur-MI","profit":4293.4},{"b":"Hyderabad-Gachibowli","profit":4227.3}],"bottomBranches":[{"b":"Pune","profit":4024.3},{"b":"Mumbai-Andheri","profit":4050.6},{"b":"Ahmedabad-SG","profit":4139.1},{"b":"Thane","profit":4196.7},{"b":"Delhi-CP","profit":4202.5}],"totalRev":110333.1,"totalProfit":50822.1,"cir":53.9};
+const fL = v => '₹' + (v/100).toFixed(1) + ' Cr';
+document.getElementById('kRev').textContent = fL(D.totalRev);
+document.getElementById('kProf').textContent = fL(D.totalProfit);
+document.getElementById('kCir').textContent = D.cir + '%';
+document.getElementById('kLast').textContent = fL(D.trend[D.trend.length-1].profit);
+const labels = D.trend.map(x=>x.m.slice(0,7));
+Chart.defaults.color = '#cbd5e1'; Chart.defaults.borderColor = '#22314f';
+new Chart(document.getElementById('cTrend'), {type:'bar', data:{labels, datasets:[
+  {label:'Revenue', data:D.trend.map(x=>x.rev), backgroundColor:'#3b82f6'},
+  {label:'Cost', data:D.trend.map(x=>x.cost), backgroundColor:'#f59e0b'},
+  {label:'Profit', data:D.trend.map(x=>x.profit), type:'line', borderColor:'#22c55e', backgroundColor:'#22c55e33', tension:.3, yAxisID:'y'}
+]}, options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById('cCir'), {type:'line', data:{labels, datasets:[{label:'CIR %', data:D.trend.map(x=>x.cir), borderColor:'#ef4444', backgroundColor:'#ef444433', fill:true, tension:.3}]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:40,max:80}}}});
+new Chart(document.getElementById('cProd'), {type:'bar', data:{labels:D.byProd.map(x=>x.p), datasets:[{label:'Profit', data:D.byProd.map(x=>x.profit), backgroundColor:['#22c55e','#3b82f6','#a78bfa','#f59e0b','#ef4444']} ]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+new Chart(document.getElementById('cReg'), {type:'doughnut', data:{labels:D.byRegion.map(x=>x.r), datasets:[{data:D.byRegion.map(x=>x.profit), backgroundColor:['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa']} ]}, options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById('cTop'), {type:'bar', data:{labels:D.topBranches.map(x=>x.b), datasets:[{label:'Profit', data:D.topBranches.map(x=>x.profit), backgroundColor:'#22c55e'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+new Chart(document.getElementById('cBot'), {type:'bar', data:{labels:D.bottomBranches.map(x=>x.b), datasets:[{label:'Profit', data:D.bottomBranches.map(x=>x.profit), backgroundColor:'#ef4444'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+</script></body></html>
