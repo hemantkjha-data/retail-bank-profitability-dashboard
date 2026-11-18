@@ -14,6 +14,9 @@ Synthetic monthly P&L data (`data/branch_pl.csv`, 720 rows: 12 branches × 5 pro
 - **Product profitability:** compares products on revenue vs profit contribution.
 - **Region & branch view:** identifies top/bottom performers to focus efficiency and growth actions.
 
+## Live Dashboard
+- **View interactive dashboard:** https://hemantkjha-data.github.io/retail-bank-profitability-dashboard/dashboard/
+
 ## Analysis & Dashboard
 - `sql/analysis.sql` — monthly P&L trend, product/region/branch profitability, income mix.
 - `dashboard/index.html` — interactive dashboard (Chart.js): KPIs, revenue-cost-profit trend, cost-to-income, product & region profit, top/bottom branches.
